@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map; // Quan trọng: Phải có import này
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -29,8 +29,8 @@ public class CategoryController {
         List<Category> categories = categoryRepository.findAll();
         return categories.stream().map(cat -> {
             Map<String, Object> map = new HashMap<>();
-            map.put("id", cat.getId()); // Dùng getId() của Lombok
-            map.put("name", cat.getName()); // Dùng getName() của Lombok
+            map.put("id", cat.getId());
+            map.put("name", cat.getName());
             map.put("productCount", productRepository.countByCategoryId(cat.getId()));
             return map;
         }).collect(Collectors.toList());

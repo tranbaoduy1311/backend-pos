@@ -1,8 +1,7 @@
 package com.nhahang.pos.pos_backend.controller;
 
-// --- SỬA LẠI IMPORT CHO ĐÚNG TÊN FILE CỦA BẠN ---
-import com.nhahang.pos.pos_backend.entity.ProductRecipe; // Đã sửa từ ProductIngredient -> ProductRecipe
-import com.nhahang.pos.pos_backend.repository.ProductRecipeRepository; // Đã sửa tên Repository
+import com.nhahang.pos.pos_backend.entity.ProductRecipe;
+import com.nhahang.pos.pos_backend.repository.ProductRecipeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,7 +14,7 @@ import java.util.List;
 public class RecipeController {
 
     @Autowired
-    private ProductRecipeRepository recipeRepo; // Đã sửa tên biến
+    private ProductRecipeRepository recipeRepo;
 
     // 1. Lấy công thức của 1 món ăn
     @GetMapping("/{productId}")

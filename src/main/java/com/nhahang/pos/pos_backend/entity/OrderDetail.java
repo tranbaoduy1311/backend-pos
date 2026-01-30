@@ -17,6 +17,5 @@ public class OrderDetail {
     private Integer quantity;
     private Double price;
 
-    // --- QUAN TRỌNG: BẠN ĐANG THIẾU DÒNG NÀY ---
     private String note;
 }

@@ -27,8 +27,7 @@ public class ReservationController {
     // API cho khách đặt bàn
     @PostMapping
     public Reservation createReservation(@RequestBody Reservation reservation) {
-        reservation.setStatus("PENDING"); // Mặc định là chờ xác nhận
-        // Nếu chưa có thời gian, lấy giờ hiện tại (hoặc xử lý ở Frontend gửi lên)
+        reservation.setStatus("PENDING");
         if (reservation.getReservationTime() == null) {
             reservation.setReservationTime(java.time.LocalDateTime.now());
         }

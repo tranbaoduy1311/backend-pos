@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 @Entity
-@Table(name = "product_ingredients") // Tên bảng trong MySQL
+@Table(name = "product_ingredients")
 @Data
 public class ProductRecipe {
     @Id
@@ -13,7 +13,6 @@ public class ProductRecipe {
 
     private Long productId;
 
-    // --- QUAN TRỌNG: PHẢI CÓ ĐOẠN NÀY ĐỂ LẤY TÊN NGUYÊN LIỆU ---
     @ManyToOne
     @JoinColumn(name = "ingredient_id")
     private Ingredient ingredient;

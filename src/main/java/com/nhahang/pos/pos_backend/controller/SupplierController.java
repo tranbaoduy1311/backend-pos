@@ -50,9 +50,8 @@ public class SupplierController {
     @PostMapping("/{id}/pay-debt")
     public Supplier payDebt(@PathVariable Long id, @RequestParam Double amount) {
         Supplier s = supplierRepo.findById(id).orElseThrow();
-        // Trừ nợ
         double newDebt = s.getTotalDebt() - amount;
-        s.setTotalDebt(newDebt < 0 ? 0 : newDebt); // Không để nợ âm
+        s.setTotalDebt(newDebt < 0 ? 0 : newDebt);
         return supplierRepo.save(s);
     }
 }

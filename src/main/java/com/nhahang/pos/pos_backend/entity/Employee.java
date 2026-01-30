@@ -21,4 +21,6 @@ public class Employee {
     // ... trong class Employee
     private String salaryType; // HOURLY, MONTHLY
     private Double hourlyRate; // Lương theo giờ
+    // Thêm vào file Employee.java
+    private Integer status = 1; // 1: Đang làm, 0: Đã nghỉ (Xóa mềm)
 }

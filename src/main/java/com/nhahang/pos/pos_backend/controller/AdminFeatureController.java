@@ -2,19 +2,19 @@ package com.nhahang.pos.pos_backend.controller;
 
 import com.nhahang.pos.pos_backend.entity.*;
 import com.nhahang.pos.pos_backend.repository.*;
+import com.nhahang.pos.pos_backend.service.AuditService; // 1. Import Service vào
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
-import org.springframework.dao.DataIntegrityViolationException;
 
 import java.util.List;
 import java.util.Optional;
-import java.time.LocalDate;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/admin")
-@CrossOrigin(origins = "http://localhost:5173") // Cho phép React truy cập
+@CrossOrigin(origins = "http://localhost:5173")
 public class AdminFeatureController {
 
     @Autowired
@@ -26,25 +26,27 @@ public class AdminFeatureController {
     @Autowired
     private SupplierRepository supplierRepo;
 
+    @Autowired
+    private AuditService auditService; // 2. Tiêm AuditService vào để sử dụng
+
     // ==========================================
     // 1. QUẢN LÝ NHÂN VIÊN (EMPLOYEES)
     // ==========================================
 
-    // HÀM NÀY BỊ THIẾU LÚC NÃY - TÔI ĐÃ THÊM LẠI
     @GetMapping("/employees")
     public List<Employee> getEmployees() {
-        return employeeRepo.findAll();
+        return employeeRepo.findAll().stream()
+                .filter(emp -> emp.getStatus() == null || emp.getStatus() == 1)
+                .collect(Collectors.toList());
     }
 
     @PostMapping("/employees")
     public ResponseEntity<?> saveEmployee(@RequestBody Employee emp) {
-        // Chặn lương âm
         if ((emp.getSalary() != null && emp.getSalary() < 0) ||
                 (emp.getHourlyRate() != null && emp.getHourlyRate() < 0)) {
             return ResponseEntity.badRequest().body("Lỗi: Lương không được là số âm!");
         }
 
-        // Kiểm tra trùng Mã nhân viên
         Optional<Employee> existingEmp = employeeRepo.findByEmployeeCode(emp.getEmployeeCode());
         if (existingEmp.isPresent()) {
             if (emp.getId() == null || !existingEmp.get().getId().equals(emp.getId())) {
@@ -54,18 +56,21 @@ public class AdminFeatureController {
 
         if (emp.getStartDate() == null)
             emp.setStartDate(java.time.LocalDate.now());
+        if (emp.getStatus() == null)
+            emp.setStatus(1);
 
-        return ResponseEntity.ok(employeeRepo.save(emp));
+        Employee saved = employeeRepo.save(emp);
+
+        // 3. GHI LOG: Thêm nhân viên mới
+        auditService.log("ADD_EMPLOYEE",
+                "Thêm mới nhân viên: " + saved.getName() + " (" + saved.getEmployeeCode() + ")", "Admin");
+
+        return ResponseEntity.ok(saved);
     }
 
     @PutMapping("/employees/{id}")
     public ResponseEntity<?> updateEmployee(@PathVariable Long id, @RequestBody Employee empDetails) {
         Employee emp = employeeRepo.findById(id).orElseThrow(() -> new RuntimeException("Không tìm thấy nhân viên"));
-
-        if ((empDetails.getSalary() != null && empDetails.getSalary() < 0) ||
-                (empDetails.getHourlyRate() != null && empDetails.getHourlyRate() < 0)) {
-            return ResponseEntity.badRequest().body("Lỗi: Lương không được là số âm!");
-        }
 
         emp.setName(empDetails.getName());
         emp.setEmployeeCode(empDetails.getEmployeeCode());
@@ -75,42 +80,46 @@ public class AdminFeatureController {
         emp.setSalaryType(empDetails.getSalaryType());
         emp.setHourlyRate(empDetails.getHourlyRate());
 
-        return ResponseEntity.ok(employeeRepo.save(emp));
+        Employee updated = employeeRepo.save(emp);
+
+        // 4. GHI LOG: Cập nhật nhân viên
+        auditService.log("UPDATE_EMPLOYEE", "Cập nhật thông tin nhân viên: " + updated.getName(), "Admin");
+
+        return ResponseEntity.ok(updated);
     }
 
     @DeleteMapping("/employees/{id}")
     public ResponseEntity<?> deleteEmployee(@PathVariable Long id) {
-        try {
-            if (!employeeRepo.existsById(id)) {
-                return ResponseEntity.notFound().build();
+        return employeeRepo.findById(id).map(emp -> {
+            if ("ADMIN".equalsIgnoreCase(emp.getRole())) {
+                return ResponseEntity.badRequest().body("Lỗi bảo mật: Không thể xóa tài khoản Quản trị viên!");
             }
-            employeeRepo.deleteById(id);
-            return ResponseEntity.ok().body("Xóa thành công!");
-        } catch (DataIntegrityViolationException e) {
-            return ResponseEntity.badRequest()
-                    .body("Không thể xóa: Nhân viên này đã có dữ liệu chấm công hoặc hóa đơn!");
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Lỗi hệ thống: " + e.getMessage());
-        }
+
+            try {
+                emp.setStatus(0);
+                employeeRepo.save(emp);
+
+                // 5. GHI LOG: Xóa nhân viên
+                auditService.log("DELETE_EMPLOYEE",
+                        "Đã xóa nhân viên: " + emp.getName() + " (Mã: " + emp.getEmployeeCode() + ")", "Admin");
+
+                return ResponseEntity.ok().body("Đã xóa nhân viên thành công!");
+            } catch (Exception e) {
+                return ResponseEntity.badRequest().body("Lỗi khi xóa: " + e.getMessage());
+            }
+        }).orElse(ResponseEntity.notFound().build());
     }
 
     // ==========================================
     // 2. QUẢN LÝ KHO (INGREDIENTS)
     // ==========================================
 
-    @GetMapping("/ingredients")
-    public List<Ingredient> getIngredients() {
-        return ingredientRepo.findAll();
-    }
-
     @PostMapping("/ingredients")
     public Ingredient saveIngredient(@RequestBody Ingredient ing) {
-        return ingredientRepo.save(ing);
-    }
-
-    @GetMapping("/ingredients/history")
-    public List<ImportHistory> getAllHistory() {
-        return importHistoryRepo.findAll();
+        Ingredient saved = ingredientRepo.save(ing);
+        // 6. GHI LOG: Tạo nguyên liệu mới
+        auditService.log("CREATE_INGREDIENT", "Tạo mới nguyên liệu: " + saved.getName(), "Admin");
+        return saved;
     }
 
     @PostMapping("/ingredients/import")
@@ -121,6 +130,7 @@ public class AdminFeatureController {
             @RequestParam Double price,
             @RequestParam(required = false) Long supplierId,
             @RequestParam(defaultValue = "true") Boolean isPaid) {
+
         Ingredient ingredient = ingredientRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy nguyên liệu"));
 
@@ -137,15 +147,20 @@ public class AdminFeatureController {
         history.setIsPaidDebt(isPaid);
         importHistoryRepo.save(history);
 
+        // 7. GHI LOG: Nhập kho nguyên liệu
+        auditService.log("IMPORT_INGREDIENT",
+                "Nhập kho " + quantity + " " + ingredient.getUnit() + " " + ingredient.getName(), "Admin");
+
         if (Boolean.FALSE.equals(isPaid) && supplierId != null) {
-            Supplier supplier = supplierRepo.findById(supplierId)
-                    .orElseThrow(() -> new RuntimeException("Không tìm thấy Nhà cung cấp"));
+            Supplier supplier = supplierRepo.findById(supplierId).orElseThrow();
             double currentDebt = supplier.getTotalDebt() != null ? supplier.getTotalDebt() : 0.0;
             supplier.setTotalDebt(currentDebt + (quantity * price));
             supplierRepo.save(supplier);
         }
         return ingredient;
     }
+
+    // Các hàm khác giữ nguyên...
 
     @PutMapping("/ingredients/{id}")
     public Ingredient updateIngredient(@PathVariable Long id, @RequestParam(required = false) Double quantity,

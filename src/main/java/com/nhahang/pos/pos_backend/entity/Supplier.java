@@ -14,5 +14,5 @@ public class Supplier {
     private String name;
     private String phone;
     private String address;
-    private Double totalDebt = 0.0; // Số tiền mình đang nợ họ
+    private Double totalDebt = 0.0;
 }

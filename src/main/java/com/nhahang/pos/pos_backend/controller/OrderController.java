@@ -98,7 +98,7 @@ public class OrderController {
             }
         }
 
-        // --- B. TRỪ KHO TỰ ĐỘNG (ĐÃ SỬA) ---
+        // --- B. TRỪ KHO TỰ ĐỘNG
         List<OrderDetail> details = orderDetailRepo.findByOrderId(orderId);
 
         for (OrderDetail item : details) {
@@ -106,8 +106,6 @@ public class OrderController {
             List<ProductRecipe> recipes = recipeRepo.findByProductId(item.getProductId());
 
             for (ProductRecipe recipe : recipes) {
-                // --- SỬA LỖI TẠI ĐÂY ---
-                // Lấy trực tiếp đối tượng Ingredient từ quan hệ @ManyToOne
                 Ingredient ing = recipe.getIngredient();
 
                 if (ing != null) {
@@ -148,13 +146,9 @@ public class OrderController {
         double amountToSubtract = detail.getPrice() * detail.getQuantity();
         order.setTotalPrice(order.getTotalPrice() - amountToSubtract);
 
-        // 2. QUAN TRỌNG: Khi xóa món, cần Reset lại mã giảm giá (để tránh lỗi logic giá
-        // âm hoặc không đủ điều kiện)
-        // Nếu muốn giữ mã thì phải tính lại, nhưng an toàn nhất là bắt nhân viên áp mã
-        // lại.
         order.setVoucherCode(null);
         order.setDiscountAmount(0.0);
-        order.setFinalPrice(order.getTotalPrice()); // Giá cuối về lại bằng giá gốc
+        order.setFinalPrice(order.getTotalPrice());
 
         // 3. Xóa chi tiết và lưu Order
         orderDetailRepo.delete(detail);
@@ -171,7 +165,6 @@ public class OrderController {
                 .orElseThrow(() -> new RuntimeException("Mã giảm giá không tồn tại hoặc đã hết hạn!"));
 
         // 2. Validate điều kiện
-        // Check ngày
         LocalDateTime now = LocalDateTime.now();
         if (promo.getStartDate() != null && now.isBefore(promo.getStartDate()))
             throw new RuntimeException("Mã chưa có hiệu lực");
@@ -208,18 +201,15 @@ public class OrderController {
         order.setVoucherCode(code);
         order.setDiscountAmount(discount);
         double finalPrice = order.getTotalPrice() - discount;
-        order.setFinalPrice(finalPrice < 0 ? 0 : finalPrice); // Không để âm tiền
+        order.setFinalPrice(finalPrice < 0 ? 0 : finalPrice);
 
         return orderRepo.save(order);
     }
 
-    // API MỚI: Lấy danh sách khuyến mãi đang hoạt động cho POS
     @GetMapping("/promotions/active")
     public List<Promotion> getActivePromotions() {
         List<Promotion> allActive = promotionRepo.findByStatus("ACTIVE");
 
-        // Lọc thêm: Chỉ lấy các mã còn hạn sử dụng (Ngày hiện tại nằm trong khoảng
-        // Start-End)
         LocalDateTime now = LocalDateTime.now();
         return allActive.stream()
                 .filter(p -> (p.getStartDate() == null || !now.isBefore(p.getStartDate())) &&

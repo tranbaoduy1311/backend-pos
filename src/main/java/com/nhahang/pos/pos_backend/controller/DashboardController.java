@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*; // Import List, Map, HashMap...
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/dashboard")
@@ -60,15 +60,11 @@ public class DashboardController {
         return stats;
     }
 
-    // 2. API MỚI: Lấy chi tiết các đơn hàng đã thanh toán hôm nay
-    // (Đây là cái bạn đang bị lỗi do thiếu)
     @GetMapping("/orders/today")
     public List<Order> getTodayOrders() {
         LocalDateTime start = LocalDate.now().atStartOfDay();
         LocalDateTime end = LocalDateTime.now();
 
-        // Gọi hàm trong Repository (Đảm bảo bạn đã thêm hàm này vào OrderRepository ở
-        // bước trước)
         return orderRepo.findAllByStatusAndCreatedAtBetween("PAID", start, end);
     }
 }

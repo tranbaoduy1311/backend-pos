@@ -27,7 +27,7 @@ public class PayrollController {
         return payrollRepo.findByMonthAndYear(month, year);
     }
 
-    // 2. TÍNH LƯƠNG (LOGIC MỚI THEO YÊU CẦU)
+    // 2. TÍNH LƯƠNG (LOGIC Ở ĐÂY)
     @PostMapping("/calculate")
     @Transactional
     public List<Payroll> calculatePayroll(@RequestParam int month, @RequestParam int year) {
@@ -58,7 +58,7 @@ public class PayrollController {
             payroll.setStandardWorkDays(STANDARD_DAYS);
 
             // 1. Tổng hợp số liệu
-            int actualWorkDays = attendances.size(); // Số ngày đi làm thực tế
+            int actualWorkDays = attendances.size();
 
             // Tổng giờ làm (cho Part-time)
             double totalWorkHours = attendances.stream().mapToDouble(Attendance::getWorkHours).sum();
@@ -67,19 +67,16 @@ public class PayrollController {
             double overtimeHours = attendances.stream().mapToDouble(Attendance::getOvertimeHours).sum();
 
             double totalSalary = 0;
-            double deduction = 0; // Tiền phạt
-            double bonus = 0; // Tiền tăng ca
+            double deduction = 0;
+            double bonus = 0;
 
             if ("HOURLY".equals(emp.getSalaryType())) {
-                // ==========================================
                 // A. PART-TIME (Lương theo giờ)
-                // ==========================================
                 double rate = emp.getHourlyRate() != null ? emp.getHourlyRate() : 20000;
                 payroll.setSalaryType("HOURLY");
                 payroll.setBaseSalary(rate);
 
                 // Logic Part-time: (Giờ làm * Lương giờ) + (Tăng ca * 35k)
-                // Lưu ý: totalWorkHours đã bao gồm cả giờ tăng ca, nên ta tách ra
                 double normalHours = totalWorkHours - overtimeHours;
                 if (normalHours < 0)
                     normalHours = 0;
@@ -91,12 +88,10 @@ public class PayrollController {
                 bonus = overtimeHours * OVERTIME_RATE;
 
                 totalSalary = regularPay + bonus;
-                deduction = 0; // Part-time không phạt nghỉ
+                deduction = 0;
 
             } else {
-                // ==========================================
                 // B. FULL-TIME (Lương tháng - Logic của bạn)
-                // ==========================================
                 double monthlySalary = emp.getSalary() != null ? emp.getSalary() : 5000000;
                 payroll.setSalaryType("MONTHLY");
                 payroll.setBaseSalary(monthlySalary);
@@ -104,7 +99,7 @@ public class PayrollController {
                 // 1. Tính số ngày nghỉ
                 int daysOff = STANDARD_DAYS - actualWorkDays;
                 if (daysOff < 0)
-                    daysOff = 0; // Đi làm đủ hoặc dư công
+                    daysOff = 0;
 
                 // 2. Tính phạt (Nếu nghỉ quá 4 ngày)
                 int penaltyDays = 0;

@@ -12,7 +12,7 @@ public class CustomerController {
     @Autowired
     private CustomerRepository customerRepo;
 
-    // Tìm khách theo SĐT
+    // Tìm khách theo SĐT TICHDIEM
     @GetMapping("/search")
     public Customer getCustomerByPhone(@RequestParam String phone) {
         return customerRepo.findByPhone(phone).orElse(null);

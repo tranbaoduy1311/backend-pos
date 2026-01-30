@@ -58,7 +58,7 @@ public class TableController {
         table.setStatus("Đã đặt");
 
         // 2. Lưu thông tin khách vào bàn để hiển thị cho nhân viên
-        table.setGuestInfo(res.getCustomerName() + " - " + res.getPhone()); // <--- QUAN TRỌNG
+        table.setGuestInfo(res.getCustomerName() + " - " + res.getPhone());
 
         tableRepository.save(table);
 
@@ -67,12 +67,11 @@ public class TableController {
         reservationRepo.save(res);
     }
 
-    // SỬA LẠI HÀM NÀY
     @PostMapping("/{id}/free")
     public void freeTable(@PathVariable Long id) {
         DiningTable table = tableRepository.findById(id).orElseThrow();
         table.setStatus("Trống");
-        table.setGuestInfo(null); // <--- Xóa thông tin khách khi trả bàn
+        table.setGuestInfo(null);
         tableRepository.save(table);
     }
 }

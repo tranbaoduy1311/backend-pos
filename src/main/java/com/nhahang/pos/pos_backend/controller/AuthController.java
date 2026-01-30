@@ -17,10 +17,6 @@ public class AuthController {
     @Autowired
     private EmployeeRepository employeeRepo;
 
-    /**
-     * Đăng nhập Admin bằng mã nhân viên
-     * Chỉ cho phép nhân viên có chức vụ (Position) là ADMIN vào hệ thống
-     */
     @PostMapping("/login-pos")
     public ResponseEntity<?> loginPos(@RequestParam String code) {
         // 1. Tìm nhân viên theo mã
@@ -29,7 +25,6 @@ public class AuthController {
         if (employeeOpt.isPresent()) {
             Employee emp = employeeOpt.get();
 
-            // 2. SỬA TẠI ĐÂY: Dùng getRole() thay vì getPosition()
             String empRole = emp.getRole();
 
             if (empRole != null && "ADMIN".equalsIgnoreCase(empRole)) {

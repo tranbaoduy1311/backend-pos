@@ -13,15 +13,15 @@ public class Order {
     private Long id;
 
     private Long tableId;
-    private Long customerId;// <--- QUAN TRỌNG: Thêm dòng này để lưu ID bàn
+    private Long customerId;
 
     private Double totalPrice;
-    private String status; // PENDING, PAID
+    private String status;
     private LocalDateTime createdAt;
 
     private String voucherCode;
-    private Double discountAmount = 0.0; // Mặc định 0
-    private Double finalPrice; // Giá sau khi giảm
+    private Double discountAmount = 0.0;
+    private Double finalPrice;
 
     @PrePersist
     protected void onCreate() {

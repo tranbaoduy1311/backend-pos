@@ -9,10 +9,8 @@ import java.time.LocalDate;
 
 @Repository
 public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
-    // Tìm xem nhân viên này hôm nay đã check-in chưa (mà chưa check-out)
     Optional<Attendance> findByEmployeeIdAndStatus(Long employeeId, String status);
 
-    // Lấy lịch sử chấm công mới nhất
     List<Attendance> findAllByOrderByCheckInDesc();
 
     List<Attendance> findByEmployeeIdAndWorkDateBetween(Long employeeId, LocalDate startDate, LocalDate endDate);

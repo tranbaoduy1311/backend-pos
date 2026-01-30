@@ -20,16 +20,15 @@ public class ImportHistory {
 
     private LocalDate importDate;
     private LocalDateTime importTime;
-    // --- THÊM 2 TRƯỜNG MỚI ---
     private Long supplierId;
 
     @PrePersist
     protected void onCreate() {
         importTime = LocalDateTime.now();
         if (isPaidDebt == null)
-            isPaidDebt = true; // Mặc định là đã trả tiền
+            isPaidDebt = true;
     }
 
-    @Column(name = "is_paid_debt") // Map đúng tên cột trong SQL
+    @Column(name = "is_paid_debt")
     private Boolean isPaidDebt;
 }

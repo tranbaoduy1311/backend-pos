@@ -24,7 +24,6 @@ public class AdminPromotionController {
     // 2. Tạo mới
     @PostMapping
     public Promotion createPromotion(@RequestBody Promotion promotion) {
-        // Có thể thêm validate trùng mã code ở đây nếu cần
         if (promotion.getStatus() == null)
             promotion.setStatus("ACTIVE");
         return promotionRepo.save(promotion);

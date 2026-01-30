@@ -17,7 +17,7 @@ public class Payroll {
     private int month;
     private int year;
 
-    private String salaryType; // HOURLY, MONTHLY
+    private String salaryType;
     private Double baseSalary;
 
     private Integer totalWorkDays;
@@ -27,11 +27,11 @@ public class Payroll {
     private Double bonus = 0.0;
     private Double deduction = 0.0;
     private Double totalSalary;
-    private String status; // DRAFT, PAID
+    private String status;
 
     private LocalDateTime createdAt;
 
-    private Integer standardWorkDays; // Ví dụ: 26
+    private Integer standardWorkDays;
 
     @PrePersist
     protected void onCreate() {

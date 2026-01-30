@@ -8,8 +8,6 @@ import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 
-// ... các import giữ nguyên ...
-
 @RestController
 @RequestMapping("/api/products")
 @CrossOrigin(origins = "http://localhost:5173")
